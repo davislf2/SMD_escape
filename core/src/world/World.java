@@ -62,7 +62,7 @@ public class World {
 		car.setOriginCenter();
 		
 		// Add the car controller
-		// controller = new ManualController(car);
+//		controller = new ManualController(car);
 		controller = new AIController(car);
 		// controller = new MyAIController(car);
 	}

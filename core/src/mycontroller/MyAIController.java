@@ -1,18 +1,219 @@
 package mycontroller;
 
+import java.util.HashMap;
+
 import controller.CarController;
+import tiles.MapTile;
+import utilities.Coordinate;
 import world.Car;
+import world.World;
+import world.WorldSpatial;
+import world.WorldSpatial.Direction;
 
 public class MyAIController extends CarController{
-
+	
+/* * * * * * VARIABLES * * * * * */
+	
+	//The Navigator
+	private Navigation navigator;
+	
+	//The coordinates of the car's next destination
+	private int[] currentDestination;
+	
+	//The coordinates of the car's next destination
+	private Direction travelDirection;
+	
+/* * * * * * CONSTRUCTOR * * * * * */
 	public MyAIController(Car car) {
 		super(car);
+		
+		//Set the current Destination to the current position
+		String position = this.getPosition();
+		this.currentDestination = MapUtilities.intCoordinate(position);
+		
+		//Set the direction to the current direction facing
+		this.travelDirection = this.getOrientation();
+		
+		//Initialize the Navigation
+		this.navigator = new MyAINavigation();
+		
 	}
-
+	
+/* * * * * * METHODS * * * * * */
+	
+	//Updates the controller
 	@Override
 	public void update(float delta) {
-		// TODO Auto-generated method stub
 		
+		//If destination reached reassign key variables
+		if(this.hasReachedDestination()){
+			this.nextDestination();
+		}
+		
+		this.moveToDestination(delta);
+		
+	}
+	
+	
+	//get new destination and reassign local attributes accordingly
+	private void nextDestination(){
+		
+		//Get the view 
+		HashMap<Coordinate,MapTile> view = this.getView();
+		
+		//Get the current coordinate
+		String stringPosition = this.getPosition();
+		Coordinate currentCoordinate = MapUtilities.coordinateFromString(stringPosition);
+		
+		//Update the navigator
+		this.navigator.update(view, currentCoordinate);
+		
+		//get the next destination
+		Coordinate destination = this.navigator.getNextCoordinate();
+		int[] intDestination = MapUtilities.intCoordinate(destination);
+		
+		//Update the destination and the direction travelled
+		if(this.currentDestination[MapUtilities.X_POS] < intDestination[MapUtilities.X_POS]){
+			this.travelDirection = WorldSpatial.Direction.EAST;
+			this.currentDestination[MapUtilities.X_POS] = intDestination[MapUtilities.X_POS];
+		}else if(this.currentDestination[MapUtilities.X_POS] > intDestination[MapUtilities.X_POS]){
+			this.travelDirection = WorldSpatial.Direction.WEST;
+			this.currentDestination[MapUtilities.X_POS] = intDestination[MapUtilities.X_POS];
+		}else if(this.currentDestination[MapUtilities.Y_POS] < intDestination[MapUtilities.Y_POS]){
+			this.travelDirection = WorldSpatial.Direction.NORTH;
+			this.currentDestination[MapUtilities.Y_POS] = intDestination[MapUtilities.Y_POS];
+		}else if(this.currentDestination[MapUtilities.Y_POS] > intDestination[MapUtilities.Y_POS]){
+			this.travelDirection = WorldSpatial.Direction.NORTH;
+			this.currentDestination[MapUtilities.Y_POS] = intDestination[MapUtilities.Y_POS];
+		}
+	}
+	
+	
+	//Moves the car towards the destination
+	private void moveToDestination(float delta){
+		
+		
+		switch(this.travelDirection){
+			case NORTH:
+				if(this.getAngle()== WorldSpatial.NORTH_DEGREE){
+					this.applyForwardAcceleration();
+				}else{
+					this.applyReverseAcceleration();
+					this.goNorth(delta);
+				}
+				break;
+			case SOUTH:
+				if(this.getAngle() == WorldSpatial.SOUTH_DEGREE){
+					this.applyForwardAcceleration();
+				}else{
+					this.applyReverseAcceleration();
+					this.goSouth(delta);
+				}
+				break;
+			case EAST:
+				if((this.getAngle()%WorldSpatial.EAST_DEGREE_MAX) == WorldSpatial.EAST_DEGREE_MIN){
+					this.applyForwardAcceleration();
+				}else{
+					this.applyReverseAcceleration();
+					this.goEast(delta);
+				}
+				break;
+			case WEST:
+				if(this.getAngle()== WorldSpatial.WEST_DEGREE){
+					this.applyForwardAcceleration();
+				}else{
+					this.applyReverseAcceleration();
+					this.goWest(delta);
+				}
+				break;
+		}
+	}
+	
+/* * * * * * TURN METHODS * * * * * */
+	
+	//Turn to the north
+	private void goNorth(float delta){
+		
+		//Get the current angle
+		float angle = this.getAngle() % 360;
+		
+		//turn appropriately
+		if(angle == 90){
+			return;
+		}else if((angle>=0 && angle<90) || (angle>=270 && angle<360)){
+			this.turnRight(delta);
+		}else{
+			this.turnLeft(delta);
+		}
+	}
+	
+	//Turn to the South
+	private void goSouth(float delta){
+		//Get the current angle
+		float angle = this.getAngle() % 360;
+			
+		//turn appropriately
+		if(angle == 270){
+			return;
+		}else if((angle>=0 && angle<90) || (angle>=270 && angle<360)){
+			this.turnLeft(delta);
+		}else{
+			this.turnRight(delta);
+		}
+	}
+	
+	//Turn to the East
+	private void goEast(float delta){
+			
+		//Get the current angle
+		float angle = this.getAngle() % 360;
+			
+		//turn appropriately
+		if(angle == 0){
+			return;
+		}else if(angle>0 && angle<180){
+			this.turnLeft(delta);
+		}else{
+			this.turnRight(delta);
+		}
+	}
+	
+	//Turn to the West
+	private void goWest(float delta){
+				
+		//Get the current angle
+		float angle = this.getAngle() % 360;
+				
+		//turn appropriately
+		if(angle == 0){
+			return;
+		}else if(angle>0 && angle<180){
+			this.turnLeft(delta);
+		}else{
+			this.turnRight(delta);
+		}
+	}
+
+/* * * * * * GETTERS & SETTERS * * * * * */	
+	public int plotPath(){
+	  
+	  return 0;
+	}
+	
+/* * * * * * GETTERS & SETTERS * * * * * */
+	
+/* * * * * * HELPER FUNCTIONS * * * * * */
+	
+	//Returns true if the car has reached its current destination
+	private boolean hasReachedDestination(){
+		
+		//Get the current coordinates
+		String stringPosition = this.getPosition();
+		int[] currentCoordinates = MapUtilities.intCoordinate(stringPosition);
+		
+		//return equality to destination coordinates;
+		return this.currentDestination[MapUtilities.X_POS] == currentCoordinates[MapUtilities.X_POS]
+				&& this.currentDestination[MapUtilities.Y_POS] == currentCoordinates[MapUtilities.Y_POS];
 	}
 
 }
