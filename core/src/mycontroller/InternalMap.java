@@ -13,6 +13,8 @@ import tiles.MapTile;
 import tiles.MudTrap;
 import utilities.Coordinate;
 import world.World;
+import world.WorldSpatial;
+import world.WorldSpatial.Direction;
 
 public class InternalMap {
 	
@@ -209,8 +211,10 @@ public class InternalMap {
     }
 	
     //Find the shortest path to pass the trap
-    public Coordinate shortestPassTrap(Coordinate currentCoordinate){
+    public Coordinate shortestPassTrap(Coordinate currentCoordinate, Direction travelDirection){
       
+        System.out.println("InternalMap-shortestPassTrap-curCoor:("+currentCoordinate.x+","+currentCoordinate.y+"):"+travelDirection);
+        
         //Create an iterator for the map
         Iterator<Entry<Coordinate,TileAbstract>> it = this.mapMemory.entrySet().iterator();
         
@@ -227,9 +231,9 @@ public class InternalMap {
             Coordinate coordinate = tuple.getKey();
             TileAbstract tile = tuple.getValue();           
            
-            //if the tile is already accessible move onto next one
+            //if the tile is next to trap, find the tile with smallest distance
             if(tile.getNextToTrap()){
-                System.out.println("getNextToTrap:("+coordinate.x+","+coordinate.y+")");
+//                System.out.println("getNextToTrap:("+coordinate.x+","+coordinate.y+")");
                 int dist = (int)Math.pow((currentCoordinate.x - coordinate.x), 2) + (int)Math.pow((currentCoordinate.y - coordinate.y), 2);
                 tile.setDistToTile(dist);
 
@@ -245,8 +249,8 @@ public class InternalMap {
         System.out.println("InternalMap-shortestPassTrap-min_dist:("+minDistTrap.x+","+minDistTrap.y+"): "+minDist);
         
         Coordinate trapExpand = minDistTrap;
-        int carDir = carDirection(currentCoordinate, minDistTrap);
-        System.out.println("carDir:"+carDir);
+        Direction carDir = carDirection(currentCoordinate, minDistTrap);
+//        System.out.println("carDir:"+carDir);
         int distToNextZone = 999999;
         Coordinate destCo = null;
         int counter = 0;
@@ -257,18 +261,24 @@ public class InternalMap {
             //Check each adjacent tile
             for(Coordinate nextCo: adjacentCoordinates){
                 System.out.println("nextCo:("+nextCo.x+","+nextCo.y+")");
-                int cd = carDirection(currentCoordinate, nextCo);
+//                int cd = carDirection(currentCoordinate, nextCo);
+//                Direction cd = carDirection(currentCoordinate, nextCo);
+                Direction cd = carDirection(trapExpand, nextCo);
+//                System.out.println("cd:"+cd+", carDir:"+travelDirection);
                 System.out.println("cd:"+cd+", carDir:"+carDir);
-                if(cd == carDir){
+//                if(cd == travelDirection){
+                if(cd == carDir){  
                     TileAbstract nextTile = mapMemory.get(nextCo);
                     
                     if(nextTile instanceof TrapAbstract){
                         trapExpand = nextCo;
+                        System.out.println("trapExpand:("+nextCo.x+","+nextCo.y+")");
                         distToNextZone++;
                         continue;
                     }
                     if(nextTile instanceof FloorAbstract){
                         destCo = nextCo;
+                        System.out.println("destCo:("+nextCo.x+","+nextCo.y+")");
                         distToNextZone++;
                         break;
                     }
@@ -287,16 +297,16 @@ public class InternalMap {
 //        return minDistTrap;
     }
     
-    private int carDirection(Coordinate currentCoordinate, Coordinate minDistTrap){
-        int carDirection = 0;  // N:1, S:2, W:3, E:4
+    private Direction carDirection(Coordinate currentCoordinate, Coordinate minDistTrap){
+        Direction carDirection = WorldSpatial.Direction.NORTH;  // N:1, S:2, W:3, E:4
         if( (currentCoordinate.x-minDistTrap.x) > 0 ){
-            carDirection = 3;
+            carDirection = WorldSpatial.Direction.WEST;
         }else if( (currentCoordinate.x-minDistTrap.x) < 0 ){
-            carDirection = 4;
+            carDirection = WorldSpatial.Direction.EAST;
         }else if( (currentCoordinate.y-minDistTrap.y) > 0 ){
-            carDirection = 2;
+            carDirection = WorldSpatial.Direction.SOUTH;
         }else if( (currentCoordinate.y-minDistTrap.y) < 0 ){
-            carDirection = 1;
+            carDirection = WorldSpatial.Direction.NORTH;
         }
         return carDirection;
     }

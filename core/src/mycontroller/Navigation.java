@@ -4,6 +4,7 @@ import java.util.HashMap;
 
 import tiles.MapTile;
 import utilities.Coordinate;
+import world.WorldSpatial.Direction;
 
 public interface Navigation {
 	
@@ -12,4 +13,6 @@ public interface Navigation {
 	
 	//get the next coordinate from the navigation
 	public Coordinate getNextCoordinate();
+
+	public void setDirection(Direction travelDirection);
 }

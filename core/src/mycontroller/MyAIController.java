@@ -123,6 +123,8 @@ public class MyAIController extends CarController{
 			this.travelDirection = WorldSpatial.Direction.SOUTH;
 			this.currentDestination[MapUtilities.Y_POS] = intDestination[MapUtilities.Y_POS];
 		}
+		
+		this.navigator.setDirection(this.travelDirection);
 	}
 	
 	

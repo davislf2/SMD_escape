@@ -6,6 +6,7 @@ import java.util.List;
 
 import tiles.MapTile;
 import utilities.Coordinate;
+import world.WorldSpatial.Direction;
 
 public class MyAINavigation implements Navigation{
 	
@@ -32,6 +33,9 @@ public class MyAINavigation implements Navigation{
 	
 	//The navigation strategy between explore(0) or next zone(1)
 	private int decisionMaker;
+	
+	//Car direction
+	private Direction travelDirection;
 	
 /* * * * * * Constructor * * * * * */
 	
@@ -116,7 +120,11 @@ public class MyAINavigation implements Navigation{
 //		}
 	}
 	
-	
+    @Override
+    public void setDirection(Direction travelDirection){
+        this.travelDirection = travelDirection;
+    }
+    
 	//Explore to an accessable, unvisited tile
 	private Coordinate explore(Coordinate boundary){	
 	  
@@ -138,12 +146,13 @@ public class MyAINavigation implements Navigation{
 	private Coordinate navToNextZone(){
 	    System.out.println("navToNextZone");
 //	    Coordinate c = new Coordinate("7,13"); // 7,14   5,15
-	    Coordinate c = this.map.shortestPassTrap(turnPosition);
+	    Coordinate c = this.map.shortestPassTrap(turnPosition, this.travelDirection);
         System.out.println("this.map.destNextToTrap:("+c.x+","+c.y+")");
 //	    System.out.println("this.map.destNextToTrap:("+this.map.destNextToTrap.x+","+this.map.destNextToTrap.y+")");
 //	    return this.map.destNextToTrap;
 	    return c;
 	}
+	
 	
 	/*
 		
