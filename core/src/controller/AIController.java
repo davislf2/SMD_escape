@@ -41,6 +41,7 @@ public class AIController extends CarController {
 
 		// If you are not following a wall initially, find a wall to stick to!
 		if(!isFollowingWall){
+		    System.out.println("getSpeed:"+getSpeed());
 			if(getSpeed() < CAR_SPEED){
 				applyForwardAcceleration();
 			}

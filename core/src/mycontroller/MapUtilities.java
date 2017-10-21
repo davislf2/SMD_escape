@@ -73,10 +73,16 @@ public class MapUtilities {
 	public static int[] intCoordinate(Coordinate coordinate){
 		
 		//Convert the coordinate to a string
-		String stringCoordinate = coordinate.toString();
-		
-		//return the string method
-		return intCoordinate(stringCoordinate);
+	    if(coordinate!=null){
+    	    if(coordinate.x<0 || coordinate.y<0 ){
+    	      return null;
+    	    }
+//    	    System.out.println("MapTuilities-intCoordinate:("+coordinate.x+","+coordinate.y+")");
+            String stringCoordinate = coordinate.toString();
+            //return the string method
+            return intCoordinate(stringCoordinate);
+	    }
+	    return null;
 	}
 	
 	

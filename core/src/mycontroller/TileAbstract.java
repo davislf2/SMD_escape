@@ -13,16 +13,25 @@ public abstract class TileAbstract {
 	private final float DEFAULT_TRAVERSAL = 1;
 	
 	//whether the tile is accessible from the car
-	private boolean accessibleFromCar;
+//	private boolean accessibleFromCar;
+	protected boolean accessibleFromCar;
 	
 	//How many zones the tile is away from the finish
 	private int zonesFromFinish;
 	
 	//Whether the tile has been visited by the car
-	private boolean visited;
+//	private boolean visited;
+	protected boolean visited;
 	
 	//The priority of when it should be traversed
-	private float traversePriority;
+//	private float traversePriority;
+	protected float traversePriority;
+	
+	//Whether the tile has been explored by the navigator
+	protected boolean explored;
+	
+	//Whether the tile is next to trap. It's possible to exit
+    protected boolean nextToTrap;
 	
 /* * * * * * Constructor * * * * * */
 	
@@ -32,6 +41,8 @@ public abstract class TileAbstract {
 		this.zonesFromFinish = PSEUDO_INFINITY;
 		this.visited = false;
 		this.traversePriority = DEFAULT_TRAVERSAL;
+		this.explored = false;
+		this.nextToTrap = false;
 	}
 	
 /* * * * * * METHODS * * * * * */
@@ -78,5 +89,29 @@ public abstract class TileAbstract {
 		return this.traversePriority;
 	}
 	
-
+	//Set the traversal property of the tile
+    public void setTraversalPriority(float p){
+      this.traversePriority = p;
+    }	
+    
+    //has the tile been visited
+    public boolean explored(){
+        return this.explored;
+    }
+    
+    //Mark the tile as visited
+    public void explore(){
+        this.explored = true;
+    }
+    
+    //has the tile been visited
+    public boolean getNextToTrap(){
+        return this.nextToTrap;
+    }
+    
+    //Mark the tile as visited
+    public void setNextToTrap(){
+        this.nextToTrap = true;
+    }
+    
 }

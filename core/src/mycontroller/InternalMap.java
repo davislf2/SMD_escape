@@ -10,6 +10,7 @@ import tiles.LavaTrap;
 import tiles.MapTile;
 import tiles.MudTrap;
 import utilities.Coordinate;
+import world.World;
 
 public class InternalMap {
 	
@@ -18,10 +19,13 @@ public class InternalMap {
 	//The internal map of abstract Tiles
 	private HashMap<Coordinate,TileAbstract> mapMemory;
 	
+	protected Coordinate destNextToTrap;
+	
 /* * * * * * CONSTRUCTOR * * * * * */
 	
 	public InternalMap(){
 		this.mapMemory = new HashMap<Coordinate, TileAbstract>();
+		this.destNextToTrap = null;
 	}
 	
 /* * * * * * METHODS * * * * * */
@@ -29,9 +33,11 @@ public class InternalMap {
 	//update the internal map
 	public void update(HashMap<Coordinate,MapTile> newView, Coordinate currentCoordinate){
 		
+	    System.out.println("currentCoordinate:("+currentCoordinate.x+","+currentCoordinate.y+")");
+	    
 		//Add newly discovered tiles to the map
 		expandMap(newView, currentCoordinate);
-		
+				
 		MapUtilities.printMap(mapMemory);
 		
 		//Spread the accessibility
@@ -115,16 +121,21 @@ public class InternalMap {
 				
 				//Check each adjacent tile
 				for(Coordinate nextCo: adjacentCoordinates){
-					
-					//if the loaction isnt in the memory next itteration
+				                 
+					//if the location isn't in the memory next iteration
 					if(!this.mapMemory.containsKey(nextCo)){
 						continue;
 					}
 					
-					//Get the Abstract tile
-					TileAbstract nextTile = mapMemory.get(nextCo);
-					
-					//if nextTile accesible floor, mark as accessible
+                    //Get the Abstract tile
+                    TileAbstract nextTile = mapMemory.get(nextCo);
+                    
+                    //Get the Abstract tile
+                    if(nextTile instanceof TrapAbstract){
+                        tile.setNextToTrap();
+                    }
+                    
+					//if nextTile accessible floor, mark as accessible
 					if((nextTile instanceof FloorAbstract) && (nextTile.accessible())){
 						tile.setAccessible(true);
 						hasUpdated = true;
@@ -135,6 +146,65 @@ public class InternalMap {
 		}
 	}
 	
+    //Returns the whether all tiles in the zone are discovered (no 
+    public Coordinate zoneDiscovered(Coordinate currentCoordinate){
+        
+        //Create an iterator for the view
+        Iterator<Entry<Coordinate,TileAbstract>> it = this.mapMemory.entrySet().iterator();
+        
+        //Iterate through the hashmap
+        while(it.hasNext()){
+            
+            //Get the next tuple
+            HashMap.Entry<Coordinate,TileAbstract> tuple = (HashMap.Entry<Coordinate,TileAbstract>)it.next();
+            
+            //Extract the coordinate and maptile
+            Coordinate coordinate = tuple.getKey();
+            TileAbstract tile = tuple.getValue();
+            
+            //if the tile is already accessible move onto next one
+            if(tile.accessible()){
+        
+              //Get the adjacent coordinates
+              List<Coordinate> adjacentCoordinates = MapUtilities.getAdjacentCoordinates(coordinate);
+              
+              //Check each adjacent tile
+              for(Coordinate nextCo: adjacentCoordinates){
+                  
+                  if(!this.mapMemory.containsKey(nextCo)){                          
+                      //If the location isn't in the memory next iteration but in the world = boundary of vision
+                      if(nextCo.x<0 || nextCo.y<0 || nextCo.x>World.MAP_WIDTH-1 || nextCo.y>World.MAP_HEIGHT-1){
+                        continue;
+                      }
+                      int[] intCo = MapUtilities.intCoordinate(nextCo);
+                      System.out.print("nextCo:("+intCo[0]+","+intCo[1]+") ");
+//                      if(intCo[0]<World.MAP_WIDTH && intCo[0]>=0
+//                          && intCo[1]<World.MAP_HEIGHT && intCo[1]>=0 ){
+//                          System.out.println("\nWorld.MAP_WIDTH:"+World.MAP_WIDTH+" World.MAP_HEIGHT:"+World.MAP_HEIGHT);
+//                          return nextCo;
+//                      }
+                      return nextCo;
+                  }
+                  //If the location is in memory, check whether it is possible end point
+                  else{
+                      TileAbstract nextTile = mapMemory.get(nextCo);
+                      //If the nextTile is final
+                      if(nextTile instanceof FinishAbstract){
+                          System.out.println("Finish point Destination");
+                          return nextCo;
+                      //If the nextTile is next to trap
+                      }else if(nextTile.getNextToTrap()){
+                          
+                          this.destNextToTrap = nextCo;
+//                          return nextCo;
+                      }
+                  }
+              }   
+            }
+        }
+        
+        return null;
+    }
 	
 	//Visit adjacents
 	private void visitAdjacents(Coordinate currentCo){
@@ -182,6 +252,7 @@ public class InternalMap {
 		//If no tiles fit the requirement return null
 		return null;
 	}
+	
 	
 /* * * * * * HELPER FUNCTIONS * * * * * */
 	

@@ -23,6 +23,10 @@ public class MyAIController extends CarController{
 	//The coordinates of the car's next destination
 	private Direction travelDirection;
 	
+	private int[] previousDestination=null;
+	private int[] previousCoordinates=null;
+	private int clock;
+	
 /* * * * * * CONSTRUCTOR * * * * * */
 	public MyAIController(Car car) {
 		super(car);
@@ -30,13 +34,17 @@ public class MyAIController extends CarController{
 		//Set the current Destination to the current position
 		String position = this.getPosition();
 		this.currentDestination = MapUtilities.intCoordinate(position);
-		
+		System.out.println(this.currentDestination);
 		//Set the direction to the current direction facing
 		this.travelDirection = this.getOrientation();
 		
 		//Initialize the Navigation
 		this.navigator = new MyAINavigation();
 		
+		System.out.println("Constructor");
+		this.previousDestination = MapUtilities.intCoordinate(position);
+		this.previousCoordinates = MapUtilities.intCoordinate(position);
+		this.clock = 0;
 	}
 	
 /* * * * * * METHODS * * * * * */
@@ -46,12 +54,33 @@ public class MyAIController extends CarController{
 	public void update(float delta) {
 		
 		//If destination reached reassign key variables
-		if(this.hasReachedDestination()){
+	    if(clock%40==0){
+//    	    System.out.println("preDes:("+previousDestination[0]+","+previousDestination[1]+")"+" t:"+clock/40);
+    //	    if(previousDestination[0]!=currentDestination[0] && previousDestination[1]!=currentDestination[1]){
+//    	      System.out.println("curD:("+currentDestination[0]+","+currentDestination[1]+")"+" t:"+clock/40);
+    //	    }
+    	    String stringPosition = this.getPosition();
+    	    int[] currentCoordinates = MapUtilities.intCoordinate(stringPosition);
+//    	    System.out.println("prePos:("+previousCoordinates[0]+","+previousCoordinates[1]+")"+" t:"+clock/40);
+    //	    if(previousCoordinates[0]!=currentCoordinates[0] && previousCoordinates[1]!=currentCoordinates[1]){
+    	      System.out.println("curPos:("+currentCoordinates[0]+","+currentCoordinates[1]+")"+" t:"+clock/40);
+    //	    }
+    	    
+    	    
+    	    previousDestination = currentDestination;
+    	    previousCoordinates = currentCoordinates;
+	    }
+	    if(clock%20==0){
+	        System.out.println("curSpeed:"+getSpeed()+" t:"+clock/40);
+	    }
+	    
+	    
+	    if(this.hasReachedDestination()){
 			this.nextDestination();
 		}
 		
 		this.moveToDestination(delta);
-		
+		clock++;
 	}
 	
 	
@@ -72,18 +101,23 @@ public class MyAIController extends CarController{
 		Coordinate destination = this.navigator.getNextCoordinate();
 		int[] intDestination = MapUtilities.intCoordinate(destination);
 		
+        System.out.println("curDes:("+intDestination[0]+","+intDestination[1]+")"+" t:"+clock/40);
+        		
 		//Update the destination and the direction travelled
 		if(this.currentDestination[MapUtilities.X_POS] < intDestination[MapUtilities.X_POS]){
 			this.travelDirection = WorldSpatial.Direction.EAST;
 			this.currentDestination[MapUtilities.X_POS] = intDestination[MapUtilities.X_POS];
+			
 		}else if(this.currentDestination[MapUtilities.X_POS] > intDestination[MapUtilities.X_POS]){
 			this.travelDirection = WorldSpatial.Direction.WEST;
 			this.currentDestination[MapUtilities.X_POS] = intDestination[MapUtilities.X_POS];
+			
 		}else if(this.currentDestination[MapUtilities.Y_POS] < intDestination[MapUtilities.Y_POS]){
 			this.travelDirection = WorldSpatial.Direction.NORTH;
 			this.currentDestination[MapUtilities.Y_POS] = intDestination[MapUtilities.Y_POS];
+			
 		}else if(this.currentDestination[MapUtilities.Y_POS] > intDestination[MapUtilities.Y_POS]){
-			this.travelDirection = WorldSpatial.Direction.NORTH;
+			this.travelDirection = WorldSpatial.Direction.SOUTH;
 			this.currentDestination[MapUtilities.Y_POS] = intDestination[MapUtilities.Y_POS];
 		}
 	}
@@ -91,7 +125,6 @@ public class MyAIController extends CarController{
 	
 	//Moves the car towards the destination
 	private void moveToDestination(float delta){
-		
 		
 		switch(this.travelDirection){
 			case NORTH:

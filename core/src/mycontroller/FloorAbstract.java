@@ -17,7 +17,19 @@ public class FloorAbstract extends TileAbstract{
 	//String representation of the tile
 	@Override
 	public String toString(){
-		return " ";
+	    if(visited){
+	      return "+";
+	    }
+	    else if(accessibleFromCar){
+	      return "_";
+	    }
+//	    else if(explored){
+//	      return "!";
+//	    }
+	    else{
+	      return String.valueOf(Math.round(traversePriority));
+	    }
+//	    return " ";
 	}
 
 }
