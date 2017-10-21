@@ -1,8 +1,10 @@
 package mycontroller;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import tiles.GrassTrap;
@@ -33,12 +35,10 @@ public class InternalMap {
 	//update the internal map
 	public void update(HashMap<Coordinate,MapTile> newView, Coordinate currentCoordinate){
 		
-	    System.out.println("currentCoordinate:("+currentCoordinate.x+","+currentCoordinate.y+")");
+	    System.out.println("InternalMap-update-currentCoordinate:("+currentCoordinate.x+","+currentCoordinate.y+")");
 	    
 		//Add newly discovered tiles to the map
-		expandMap(newView, currentCoordinate);
-				
-		MapUtilities.printMap(mapMemory);
+		expandMap(newView, currentCoordinate);				
 		
 		//Spread the accessibility
 		spreadAccessibility(currentCoordinate);
@@ -46,6 +46,8 @@ public class InternalMap {
 		//Visit adjacents
 		visitAdjacents(currentCoordinate);
 		
+		MapUtilities.printMap(mapMemory);
+        
 		//Expand the finish zones
 		//expandFinishZones();
 	}
@@ -149,7 +151,7 @@ public class InternalMap {
     //Returns the whether all tiles in the zone are discovered (no 
     public Coordinate zoneDiscovered(Coordinate currentCoordinate){
         
-        //Create an iterator for the view
+        //Create an iterator for the map
         Iterator<Entry<Coordinate,TileAbstract>> it = this.mapMemory.entrySet().iterator();
         
         //Iterate through the hashmap
@@ -165,47 +167,140 @@ public class InternalMap {
             //if the tile is already accessible move onto next one
             if(tile.accessible()){
         
-              //Get the adjacent coordinates
-              List<Coordinate> adjacentCoordinates = MapUtilities.getAdjacentCoordinates(coordinate);
-              
-              //Check each adjacent tile
-              for(Coordinate nextCo: adjacentCoordinates){
-                  
-                  if(!this.mapMemory.containsKey(nextCo)){                          
-                      //If the location isn't in the memory next iteration but in the world = boundary of vision
-                      if(nextCo.x<0 || nextCo.y<0 || nextCo.x>World.MAP_WIDTH-1 || nextCo.y>World.MAP_HEIGHT-1){
-                        continue;
-                      }
-                      int[] intCo = MapUtilities.intCoordinate(nextCo);
-                      System.out.print("nextCo:("+intCo[0]+","+intCo[1]+") ");
-//                      if(intCo[0]<World.MAP_WIDTH && intCo[0]>=0
-//                          && intCo[1]<World.MAP_HEIGHT && intCo[1]>=0 ){
-//                          System.out.println("\nWorld.MAP_WIDTH:"+World.MAP_WIDTH+" World.MAP_HEIGHT:"+World.MAP_HEIGHT);
-//                          return nextCo;
-//                      }
-                      return nextCo;
-                  }
-                  //If the location is in memory, check whether it is possible end point
-                  else{
-                      TileAbstract nextTile = mapMemory.get(nextCo);
-                      //If the nextTile is final
-                      if(nextTile instanceof FinishAbstract){
-                          System.out.println("Finish point Destination");
-                          return nextCo;
-                      //If the nextTile is next to trap
-                      }else if(nextTile.getNextToTrap()){
-                          
-                          this.destNextToTrap = nextCo;
-//                          return nextCo;
-                      }
-                  }
-              }   
+                //Get the adjacent coordinates
+                List<Coordinate> adjacentCoordinates = MapUtilities.getAdjacentCoordinates(coordinate);
+                
+                //Check each adjacent tile
+                for(Coordinate nextCo: adjacentCoordinates){
+                    
+                    if(!this.mapMemory.containsKey(nextCo)){                          
+                        //If the location isn't in the memory next iteration but in the world = boundary of vision
+                        if(nextCo.x<0 || nextCo.y<0 || nextCo.x>World.MAP_WIDTH-1 || nextCo.y>World.MAP_HEIGHT-1){
+                          continue;
+                        }
+                        int[] intCo = MapUtilities.intCoordinate(nextCo);
+                        System.out.print("nextCo:("+intCo[0]+","+intCo[1]+") ");
+  //                      if(intCo[0]<World.MAP_WIDTH && intCo[0]>=0
+  //                          && intCo[1]<World.MAP_HEIGHT && intCo[1]>=0 ){
+  //                          System.out.println("\nWorld.MAP_WIDTH:"+World.MAP_WIDTH+" World.MAP_HEIGHT:"+World.MAP_HEIGHT);
+  //                          return nextCo;
+  //                      }
+                        return nextCo;
+                    }
+                    //If the location is in memory, check whether it is possible end point
+                    else{
+                        TileAbstract nextTile = mapMemory.get(nextCo);
+                        //If the nextTile is final
+                        if(nextTile instanceof FinishAbstract){
+                            System.out.println("Finish point Destination");
+                            return nextCo;
+                        //If the nextTile is next to trap
+                        }else if(nextTile.getNextToTrap()){
+                            
+                            this.destNextToTrap = nextCo;
+  //                          return nextCo;
+                        }
+                    }
+                }   
             }
         }
         
         return null;
     }
 	
+    //Find the shortest path to pass the trap
+    public Coordinate shortestPassTrap(Coordinate currentCoordinate){
+      
+        //Create an iterator for the map
+        Iterator<Entry<Coordinate,TileAbstract>> it = this.mapMemory.entrySet().iterator();
+        
+        int minDist = 9999999;
+        TileAbstract minDistTile = null;
+        Coordinate minDistTrap = null;
+        //Iterate through the hashmap
+        while(it.hasNext()){
+            
+            //Get the next tuple
+            HashMap.Entry<Coordinate,TileAbstract> tuple = (HashMap.Entry<Coordinate,TileAbstract>)it.next();
+            
+            //Extract the coordinate and maptile
+            Coordinate coordinate = tuple.getKey();
+            TileAbstract tile = tuple.getValue();           
+           
+            //if the tile is already accessible move onto next one
+            if(tile.getNextToTrap()){
+                System.out.println("getNextToTrap:("+coordinate.x+","+coordinate.y+")");
+                int dist = (int)Math.pow((currentCoordinate.x - coordinate.x), 2) + (int)Math.pow((currentCoordinate.y - coordinate.y), 2);
+                tile.setDistToTile(dist);
+
+                // find shortest path from current position to the nearest trap
+                if( dist < minDist ){
+                    minDist = dist;
+                    minDistTile = tile;
+                    minDistTrap = coordinate;
+                }
+            }
+        }
+        
+        System.out.println("InternalMap-shortestPassTrap-min_dist:("+minDistTrap.x+","+minDistTrap.y+"): "+minDist);
+        
+        Coordinate trapExpand = minDistTrap;
+        int carDir = carDirection(currentCoordinate, minDistTrap);
+        System.out.println("carDir:"+carDir);
+        int distToNextZone = 999999;
+        Coordinate destCo = null;
+        int counter = 0;
+        while(true){
+            //Get the adjacent coordinates
+            List<Coordinate> adjacentCoordinates = MapUtilities.getAdjacentCoordinates(trapExpand);
+            
+            //Check each adjacent tile
+            for(Coordinate nextCo: adjacentCoordinates){
+                System.out.println("nextCo:("+nextCo.x+","+nextCo.y+")");
+                int cd = carDirection(currentCoordinate, nextCo);
+                System.out.println("cd:"+cd+", carDir:"+carDir);
+                if(cd == carDir){
+                    TileAbstract nextTile = mapMemory.get(nextCo);
+                    
+                    if(nextTile instanceof TrapAbstract){
+                        trapExpand = nextCo;
+                        distToNextZone++;
+                        continue;
+                    }
+                    if(nextTile instanceof FloorAbstract){
+                        destCo = nextCo;
+                        distToNextZone++;
+                        break;
+                    }
+                }
+            }
+            counter++;
+            if(counter > 3){
+                break;
+            }
+            if(destCo!=null){
+                break;
+            }
+        }
+        
+        return destCo;
+//        return minDistTrap;
+    }
+    
+    private int carDirection(Coordinate currentCoordinate, Coordinate minDistTrap){
+        int carDirection = 0;  // N:1, S:2, W:3, E:4
+        if( (currentCoordinate.x-minDistTrap.x) > 0 ){
+            carDirection = 3;
+        }else if( (currentCoordinate.x-minDistTrap.x) < 0 ){
+            carDirection = 4;
+        }else if( (currentCoordinate.y-minDistTrap.y) > 0 ){
+            carDirection = 2;
+        }else if( (currentCoordinate.y-minDistTrap.y) < 0 ){
+            carDirection = 1;
+        }
+        return carDirection;
+    }
+    
 	//Visit adjacents
 	private void visitAdjacents(Coordinate currentCo){
 		

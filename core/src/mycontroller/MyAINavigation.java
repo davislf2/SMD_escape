@@ -137,32 +137,29 @@ public class MyAINavigation implements Navigation{
 	//Explore to next zone
 	private Coordinate navToNextZone(){
 	    System.out.println("navToNextZone");
-	    int[] intCo = MapUtilities.intCoordinate(this.turnPosition);
-	    int newY = intCo[1] - 1;
-//	    return MapUtilities.coordinateFromInt(intCo[1], newY);
-	    
-	    Coordinate c = new Coordinate("7,15"); // 7,14   5,15
-	    System.out.println("this.map.destNextToTrap:("+this.map.destNextToTrap.x+","+this.map.destNextToTrap.y+")");
+//	    Coordinate c = new Coordinate("7,13"); // 7,14   5,15
+	    Coordinate c = this.map.shortestPassTrap(turnPosition);
+        System.out.println("this.map.destNextToTrap:("+c.x+","+c.y+")");
+//	    System.out.println("this.map.destNextToTrap:("+this.map.destNextToTrap.x+","+this.map.destNextToTrap.y+")");
 //	    return this.map.destNextToTrap;
 	    return c;
 	}
 	
-	private void plotPath(Coordinate startPos, Coordinate endPos, boolean traverseTraps){
-	    
+	/*
+		
+	//plot a path from startPos to any of the endpos and save it to the currentPath
+	private void plotPath(Coordinate startPos, List<Coordinate> endPos, boolean traverseTraps){
+        List<Coordinate> destList = new ArrayList<Coordinate>();
+	
 	}
 	
-//	//plot a path from startPos to any of the endpos and save it to the currentPath
-//	private void plotPath(Coordinate startPos, List<Coordinate> endPos, boolean traverseTraps){
-//        List<Coordinate> destList = new ArrayList<Coordinate>();
-////        destList.add(endPos);		
-//	}
-//	
-//	//plot a path from startPos to the endpos and save it to the CurrentPath
-//	private void plotPath(Coordinate startPos, Coordinate endPos, boolean traverseTraps){
-//		List<Coordinate> destList = new ArrayList<Coordinate>();
-//		destList.add(endPos);
-//		plotPath(startPos, destList, traverseTraps);
-//	}
+	//plot a path from startPos to the endpos and save it to the CurrentPath
+	private void plotPath(Coordinate startPos, Coordinate endPos, boolean traverseTraps){
+		List<Coordinate> destList = new ArrayList<Coordinate>();
+		destList.add(endPos);
+		plotPath(startPos, destList, traverseTraps);
+	}
+	*/
 	
 /* * * * * * GETTERS AND SETTER * * * * * */
 	

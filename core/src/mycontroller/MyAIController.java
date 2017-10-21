@@ -23,6 +23,7 @@ public class MyAIController extends CarController{
 	//The coordinates of the car's next destination
 	private Direction travelDirection;
 	
+	private final float CAR_SPEED = 3;
 	private int[] previousDestination=null;
 	private int[] previousCoordinates=null;
 	private int clock;
@@ -76,6 +77,8 @@ public class MyAIController extends CarController{
 	    
 	    
 	    if(this.hasReachedDestination()){
+	        System.out.println("hasReachedDest");
+	        System.out.println("Des:("+this.currentDestination[MapUtilities.X_POS]+","+this.currentDestination[MapUtilities.Y_POS]+")");	        
 			this.nextDestination();
 		}
 		
@@ -129,7 +132,9 @@ public class MyAIController extends CarController{
 		switch(this.travelDirection){
 			case NORTH:
 				if(this.getAngle()== WorldSpatial.NORTH_DEGREE){
-					this.applyForwardAcceleration();
+				    if(getSpeed() < CAR_SPEED){
+				        this.applyForwardAcceleration();
+				    }
 				}else{
 					this.applyReverseAcceleration();
 					this.goNorth(delta);
@@ -137,7 +142,9 @@ public class MyAIController extends CarController{
 				break;
 			case SOUTH:
 				if(this.getAngle() == WorldSpatial.SOUTH_DEGREE){
-					this.applyForwardAcceleration();
+				    if(getSpeed() < CAR_SPEED){
+				        this.applyForwardAcceleration();
+				    }
 				}else{
 					this.applyReverseAcceleration();
 					this.goSouth(delta);
@@ -145,7 +152,9 @@ public class MyAIController extends CarController{
 				break;
 			case EAST:
 				if((this.getAngle()%WorldSpatial.EAST_DEGREE_MAX) == WorldSpatial.EAST_DEGREE_MIN){
-					this.applyForwardAcceleration();
+				    if(getSpeed() < CAR_SPEED){
+				        this.applyForwardAcceleration();
+				    }
 				}else{
 					this.applyReverseAcceleration();
 					this.goEast(delta);
@@ -153,7 +162,9 @@ public class MyAIController extends CarController{
 				break;
 			case WEST:
 				if(this.getAngle()== WorldSpatial.WEST_DEGREE){
-					this.applyForwardAcceleration();
+				    if(getSpeed() < CAR_SPEED){
+				        this.applyForwardAcceleration();
+				    }
 				}else{
 					this.applyReverseAcceleration();
 					this.goWest(delta);

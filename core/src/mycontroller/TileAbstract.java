@@ -32,6 +32,9 @@ public abstract class TileAbstract {
 	
 	//Whether the tile is next to trap. It's possible to exit
     protected boolean nextToTrap;
+    
+    //Distance from a position to this tile
+    protected float distToTile;
 	
 /* * * * * * Constructor * * * * * */
 	
@@ -113,5 +116,16 @@ public abstract class TileAbstract {
     public void setNextToTrap(){
         this.nextToTrap = true;
     }
+ 
+    //get distance to this tile
+    public float getDistToTile(){
+       return this.distToTile;
+    }  
     
+    //set distance to this tile
+    public void setDistToTile(float f){
+        this.distToTile = f;
+    }
+    
+  
 }
