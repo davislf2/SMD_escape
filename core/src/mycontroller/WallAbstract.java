@@ -1,5 +1,10 @@
 package mycontroller;
 
+/** * * * * * * * * * * * * * *
+ * 	Group 21
+ * 	A class representing an abstract trap from the world
+ ** * * * * * * * * * * * * * */
+
 public class WallAbstract extends TileAbstract{
 	
 /* * * * * * METHODS * * * * * */

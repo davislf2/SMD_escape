@@ -55,12 +55,12 @@ public class Simulation extends ApplicationAdapter implements InputProcessor {
 		
 		startTime = System.currentTimeMillis();
 		// Define the asset manager
-		// mapName = "easy-map.tmx";
-		// mapName = "easy-map-traps.tmx";
-		// mapName = "lecture-preview.tmx";
-		// mapName = "lecture-preview2.tmx";
-		if (null == mapName) mapName = "lecture-preview2.tmx";
-//		if (null == mapName) mapName = "big-map.tmx";
+//		 mapName = "easy-map.tmx";
+//		 mapName = "easy-map-traps.tmx";
+//		 mapName = "lecture-preview.tmx";
+//		 mapName = "lecture-preview2.tmx";
+//		if (null == mapName) mapName = "lecture-preview2.tmx";
+		if (null == mapName) mapName = "big-map.tmx";
 		map = new TmxMapLoader().load(mapName);
 		
 		// Create the world

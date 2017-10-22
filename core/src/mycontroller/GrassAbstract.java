@@ -1,5 +1,10 @@
 package mycontroller;
 
+/** * * * * * * * * * * * * * *
+ * 	Group 21
+ * 	Class which representing a grass tile
+ ** * * * * * * * * * * * * * */
+
 public class GrassAbstract extends TrapAbstract{
 	
 /* * * * * * METHODS * * * * * */

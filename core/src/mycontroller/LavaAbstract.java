@@ -1,5 +1,10 @@
 package mycontroller;
 
+/** * * * * * * * * * * * * * *
+ * 	Group 21
+ * 	Class which representing a lava tile
+ ** * * * * * * * * * * * * * */
+
 public class LavaAbstract extends TrapAbstract{
 	
 /* * * * * * METHODS * * * * * */

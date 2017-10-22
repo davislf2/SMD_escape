@@ -1,5 +1,10 @@
 package mycontroller;
 
+/** * * * * * * * * * * * * * *
+ * 	Group 21
+ * 	A class representing an abstract tile from the world
+ ** * * * * * * * * * * * * * */
+
 import java.util.List;
 
 public abstract class TrapAbstract extends TileAbstract{

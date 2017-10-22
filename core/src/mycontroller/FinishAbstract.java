@@ -1,11 +1,20 @@
 package mycontroller;
 
+/** * * * * * * * * * * * * * *
+ * 	Group 21
+ * 	Class which representing a finish tile
+ ** * * * * * * * * * * * * * */
+
 import java.util.List;
 
-public class FinishAbstract extends TileAbstract{
+/**We changed this so that it extended from the floorabstract 
+ * This was necessary to make the explore function work
+ */
+public class FinishAbstract extends FloorAbstract{
 	
 /* * * * * * VARIABLES * * * * * */
 	
+	//Denotes the finish as it its own zone
 	public static final int FINISH_ZONE = 0;
 	
 /* * * * * * CONSTRUCTOR * * * * * */

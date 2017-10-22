@@ -1,5 +1,10 @@
 package mycontroller;
 
+/** * * * * * * * * * * * * * *
+ * 	Group 21
+ * 	A class of helper functions for use on the coordinate system
+ ** * * * * * * * * * * * * * */
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -20,6 +25,7 @@ public class MapUtilities {
 	
 /* * * * * * METHODS * * * * * */
 	
+	//Refactored from the Internal Map class in order to increase cohesion
 	//Returns an ArrayList of the coordinates adjacent to the argument coordinate
 	public static List<Coordinate> getAdjacentCoordinates(Coordinate currentCo){
 			
@@ -40,6 +46,31 @@ public class MapUtilities {
 		returnList.add(sCoordinate);
 		returnList.add(eCoordinate);
 		returnList.add(wCoordinate);
+		
+		//Return the list
+		return returnList;
+	}
+	
+	//Returns an ArrayList of the coordinates adjacent to the argument coordinate
+	public static List<Coordinate> getSurroundingCoordinates(Coordinate currentCo){
+			
+		//Initialize the list
+		List<Coordinate> returnList = getAdjacentCoordinates(currentCo);
+			
+		//Get the current coordinate as an integer array
+		int[] intCoordinate = intCoordinate(currentCo);
+		
+		//Create the directional adjacents
+		Coordinate neCoordinate = coordinateFromInt(intCoordinate[X_POS]+1,intCoordinate[Y_POS]+1);
+		Coordinate nwCoordinate = coordinateFromInt(intCoordinate[X_POS]-1,intCoordinate[Y_POS]-1);
+		Coordinate seCoordinate = coordinateFromInt(intCoordinate[X_POS]+1,intCoordinate[Y_POS]-1);
+		Coordinate swCoordinate = coordinateFromInt(intCoordinate[X_POS]-1,intCoordinate[Y_POS]+1);
+		
+		//Add each to the list
+		returnList.add(neCoordinate);
+		returnList.add(nwCoordinate);
+		returnList.add(seCoordinate);
+		returnList.add(swCoordinate);
 		
 		//Return the list
 		return returnList;
@@ -73,16 +104,10 @@ public class MapUtilities {
 	public static int[] intCoordinate(Coordinate coordinate){
 		
 		//Convert the coordinate to a string
-	    if(coordinate!=null){
-    	    if(coordinate.x<0 || coordinate.y<0 ){
-    	      return null;
-    	    }
-//    	    System.out.println("MapTuilities-intCoordinate:("+coordinate.x+","+coordinate.y+")");
-            String stringCoordinate = coordinate.toString();
-            //return the string method
-            return intCoordinate(stringCoordinate);
-	    }
-	    return null;
+		String stringCoordinate = coordinate.toString();
+		
+		//return the string method
+		return intCoordinate(stringCoordinate);
 	}
 	
 	
@@ -156,6 +181,7 @@ public class MapUtilities {
 		}
 		
 		//Print out the map
+		/*System.out.println("Map:");
 		for(int row = World.MAP_HEIGHT - 1; row>=0; row--){
 			for(int col = 0; col< World.MAP_WIDTH; col++ ){
 				if(printMap[col][row] == null){
@@ -166,8 +192,66 @@ public class MapUtilities {
 			}
 			System.out.println("");
 		}
+		System.out.println("");*/
+		
+		//Print out the visited map
+		System.out.println("Visited:");
+		for(int row = World.MAP_HEIGHT - 1; row>=0; row--){
+			for(int col = 0; col< World.MAP_WIDTH; col++ ){
+				if(printMap[col][row] == null){
+					System.out.print("?");
+				}else{
+					if(!(printMap[col][row] instanceof FloorAbstract)){
+						System.out.print(printMap[col][row].toString());
+					}else if(printMap[col][row].visited()){
+						System.out.print("O");
+					}else{
+						System.out.print(" ");
+					}
+				}
+			}
+			System.out.println("");
+		}
 		System.out.println("");
 		
+		//Print out the accessible map
+		/*System.out.println("Accessible:");
+		for(int row = World.MAP_HEIGHT - 1; row>=0; row--){
+			for(int col = 0; col< World.MAP_WIDTH; col++ ){
+				if(printMap[col][row] == null){
+					System.out.print("?");
+				}else{
+					if(!(printMap[col][row] instanceof FloorAbstract)){
+						System.out.print(printMap[col][row].toString());
+					}else if(printMap[col][row].accessible()){
+						System.out.print("O");
+					}else{
+						System.out.print(" ");
+					}
+				}
+			}
+			System.out.println("");
+		}
+		System.out.println("");*/
+		
+	}
+	
+	
+	//Returns the absulute distance between 2 tiles
+	public static double absoluteDistance(int[] tileA, int[] tileB){
+		
+		double xSqrDist = Math.pow(tileA[X_POS] - tileB[X_POS], 2);
+		double ySqrDist = Math.pow(tileA[Y_POS] - tileB[Y_POS], 2);
+		
+		return Math.sqrt(xSqrDist + ySqrDist);
+	}
+	
+	//Returns the absulute distance between 2 tiles
+	public static double absoluteDistance(Coordinate tileA, Coordinate tileB){
+		
+		int[] intTileA = intCoordinate(tileA);
+		int[] intTileB = intCoordinate(tileB);
+		return absoluteDistance(intTileA, intTileB);
 	}
 
 }

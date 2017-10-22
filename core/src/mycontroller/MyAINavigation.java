@@ -1,41 +1,50 @@
 package mycontroller;
 
+/** * * * * * * * * * * * * * *
+ * 	Group 21
+ * 	My implementation of the Navigation interface
+ ** * * * * * * * * * * * * * */
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 import tiles.MapTile;
 import utilities.Coordinate;
-import world.WorldSpatial.Direction;
 
 public class MyAINavigation implements Navigation{
 	
 /* * * * * * VARIABLES * * * * * */
 	
+	//Constants added to avoid magic numbers
 	//Coordinate return commands
-	private final int EXPLORE = 0;
+	private final int EXPLORE_NO_WALLS = 0;
+	private final int EXPLORE_WALLS = 2;
 	private final int NEXT_ZONE = 1;
 	
 	//Where the car is currently
 	private Coordinate turnPosition;
 	
-	//The car's current health
-	private int turnHealth;
-	
-	//The car's current speed
-	private float turnSpeed;
-	
 	//The current planed path
 	private List<Coordinate> currentPath;
+	
+	//The current health
+	private int turnHealth;
+	
+	//The current turnSpeed
+	private float turnSpeed;
 	
 	//The internal mao
 	private InternalMap map;
 	
-	//The navigation strategy between explore(0) or next zone(1)
-	private int decisionMaker;
-	
-	//Car direction
-	private Direction travelDirection;
+	/**
+	 * NB we have refactored the crux of the plotPath function to work through 
+	 * a newly implemented PathPlotter interface
+	 * We did this as the Navigation class became unwildly and uncohesive,
+	 * And the added interface made out system more flexible
+	 **/
+	//The path planner
+	private PathPlotter plotter;
 	
 /* * * * * * Constructor * * * * * */
 	
@@ -46,19 +55,23 @@ public class MyAINavigation implements Navigation{
 		//Initialize the map
 		this.map = new InternalMap();
 		
-		//Initialize the decision
-		this.decisionMaker = 0;
+		//Set dijkstras as the path plotter
+		this.plotter = new Dijkstras();
 	}
 	
 /* * * * * * METHODS * * * * * */	
 	
 	//Update the Navigator
 	@Override
-	public void update(HashMap<Coordinate, MapTile> view, Coordinate currentCoordinate){
+	public void update(HashMap<Coordinate, MapTile> view, Coordinate currentCoordinate, int health, float speed){
+		
+		//Update the denormalized variables
+		this.turnHealth = health;
+		this.turnSpeed = speed;
 		
 		//Update the map
 		this.map.update(view, currentCoordinate);
-		
+		System.out.println("===================Map update");
 		//Update the record of position
 		this.turnPosition = currentCoordinate;
 	}
@@ -67,111 +80,90 @@ public class MyAINavigation implements Navigation{
 	@Override
 	public Coordinate getNextCoordinate() {
 		
-		int[] intCo = MapUtilities.intCoordinate(this.turnPosition);
-//		explore();
-//		int newX = intCo[0] + 1;
-//		return MapUtilities.coordinateFromInt(newX, intCo[1]);
-		Coordinate boundary = this.map.zoneDiscovered(turnPosition);
+		int decisionMaker = 0;
 		
-	    if(boundary!=null){
-//	        return explore(boundary);
-	        int[] intBd = MapUtilities.intCoordinate(boundary);
-	        System.out.println("boundary:("+intBd[0]+","+intBd[1]+")");
-	        return boundary;
-	    }else{
-	        return navToNextZone();
-	    }
-
-	        
-//        switch(decisionMaker){
-//          case 0:   // Explore
-//              explore();
-//              break;
-//          case 1:   // Navigate to the next zone
-//              navToNextZone();
-//              break;
-//          default:
-//              return null;
-//        }
-//        int newX = intCo[0] + 1;
-//        return MapUtilities.coordinateFromInt(newX, intCo[1]);
-            
-	    
-//      int decisionMaker = 0;        
-//		while(true){
-//			//If there is already a path planned return the next coordinate in that path
-//			if(this.currentPath.size() != 0){
-//			 	Coordinate nextCoordinate = this.currentPath.get(0);
-//			 	this.currentPath.remove(0);
-//			 	return nextCoordinate;
-//			}
-//			
-//			switch(decisionMaker){
-//				case EXPLORE:
-//					explore();
-//					break;
-//				case NEXT_ZONE:
-//					navToNextZone();
-//					break;
-//				default:
-//					return null;
-//			}
-//			decisionMaker ++;
-//		}
+		while(true){
+			//If there is already a path planned return the next coordinate in that path
+			if(this.currentPath.size() != 0){
+			 	Coordinate nextCoordinate = this.currentPath.get(0);
+			 	this.currentPath.remove(0);
+			 	return nextCoordinate;
+			}
+			
+			switch(decisionMaker){
+				case EXPLORE_NO_WALLS:
+				    System.out.println("============EXPLORE_NO_WALLS============");
+					explore(false);
+					break;
+				case EXPLORE_WALLS:
+				    System.out.println("============EXPLORE_WALLS============");
+					explore(true);
+					break;
+				case NEXT_ZONE:
+				    System.out.println("============NEXT_ZONE============");
+					navToNextZone();
+					break;
+				default:
+					return null;
+			}
+			decisionMaker ++;
+		}
 	}
 	
-    @Override
-    public void setDirection(Direction travelDirection){
-        this.travelDirection = travelDirection;
-    }
-    
-	//Explore to an accessable, unvisited tile
-	private Coordinate explore(Coordinate boundary){	
-	  
-	    int[] intCo = MapUtilities.intCoordinate(this.turnPosition);
-	    int newY = intCo[1] - 1;
-	    return MapUtilities.coordinateFromInt(intCo[1], newY);
-	    
-//    	//Get the next coordinate to be explored
-//    	Coordinate nextDestination = this.map.nextToExplore();
-//		
-//		//If the next destination is not null plot a path to it
-//		if(nextDestination != null){
-//			plotPath(this.turnPosition, nextDestination, false);
-//		}
+	
+	//Explore to an accessible, unvisited tile
+	private void explore(boolean byWalls){	
+		
+		//Get the next coordinate to be explored
+		Coordinate nextDestination = this.map.nextToExplore(this.turnPosition, byWalls);
+		System.out.println("nextDestination:("+nextDestination.x+","+nextDestination.y+")");
+		//If the next destination is not null plot a path to it
+		if(nextDestination != null){
+			plotPath(this.turnPosition, nextDestination, false);
+		}
 		
 	}
 	
 	//Explore to next zone
-	private Coordinate navToNextZone(){
-	    System.out.println("navToNextZone");
-//	    Coordinate c = new Coordinate("7,13"); // 7,14   5,15
-	    Coordinate c = this.map.shortestPassTrap(turnPosition, this.travelDirection);
-        System.out.println("this.map.destNextToTrap:("+c.x+","+c.y+")");
-//	    System.out.println("this.map.destNextToTrap:("+this.map.destNextToTrap.x+","+this.map.destNextToTrap.y+")");
-//	    return this.map.destNextToTrap;
-	    return c;
-	}
-	
-	
-	/*
+	private void navToNextZone(){
 		
-	//plot a path from startPos to any of the endpos and save it to the currentPath
-	private void plotPath(Coordinate startPos, List<Coordinate> endPos, boolean traverseTraps){
-        List<Coordinate> destList = new ArrayList<Coordinate>();
-	
+		//Get the list of coordinates in the desired next zone
+		List<Coordinate> nextZoneCos = this.map.getNextZones();
+		
+		//If the next list is not empty plot a path to it
+		if(nextZoneCos.size()!=0){
+			plotPath(this.turnPosition, nextZoneCos, true);
+		}
 	}
 	
-	//plot a path from startPos to the endpos and save it to the CurrentPath
+	//The body of this function was refactored through a new interface
+	//plot a path from startPos to any of the endposendPos and save it to the currentPath
+	private void plotPath(Coordinate startPos, List<Coordinate> endPos, boolean traverseTraps){
+		this.currentPath = this.plotter.plotPath(this.map.getMapMemory(), endPos, startPos, traverseTraps);
+		
+		System.out.println("curPos:("+this.turnPosition.x+","+this.turnPosition.y+"), Speed:"+this.turnSpeed);
+		System.out.println("startPos:("+startPos.x+","+startPos.y+")");
+		System.out.println("endPos:");
+		for(Coordinate c:endPos){
+		    System.out.print("("+c.x+","+c.y+") ");
+		}
+		System.out.println("");
+		if(traverseTraps){
+		    System.out.println("traverseTraps");
+		}
+		System.out.println("currentPath");
+		for(Coordinate c:currentPath){
+		    System.out.print("("+c.x+","+c.y+") ");
+		}
+		System.out.println("");
+	}
+	
+	//Added to increase polymorphism
+	//plot a path from startPos to  the endpos and save it to the CurrentPath
 	private void plotPath(Coordinate startPos, Coordinate endPos, boolean traverseTraps){
 		List<Coordinate> destList = new ArrayList<Coordinate>();
 		destList.add(endPos);
 		plotPath(startPos, destList, traverseTraps);
 	}
-	*/
-	
-/* * * * * * GETTERS AND SETTER * * * * * */
-	
-/* * * * * * HELPER FUNCTIONS * * * * * */
 
 }
